@@ -1,28 +1,8 @@
-import tkinter as tk
-import requests
+import welcome
+import planner
 
+robot_number = welcome.get_robot_number()
 
-def send():
-  print("Command sent")
-  try:
-      response = requests.get('http://api.open-notify.org/astros.json', timeout=5)
-      response.raise_for_status()
-      # Code here will only run if the request is successful
-      print(response)
-      print(response.json())
-  except requests.exceptions.HTTPError as errh:
-      print(errh)
-  except requests.exceptions.ConnectionError as errc:
-      print(errc)
-  except requests.exceptions.Timeout as errt:
-      print(errt)
-  except requests.exceptions.RequestException as err:
-      print(err)
+planner.plan_missions(robot_number)
 
-
-w = tk.Tk()
-l = tk.Label(text="Mars Bot Challenge")
-l.pack()
-b = tk.Button(text="Send to Mars", command=send)
-b.pack()
-w.mainloop()
+exit(0)

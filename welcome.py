@@ -6,17 +6,19 @@ def get_robot_number():
   first_robot = int(robots_dict['first_robot'])
   last_robot = int(robots_dict['last_robot'])
 
-  layout = [  [sg.Text("What is your robot number?")],
-              [sg.Input()],
+  layout = [  [sg.Text("What is your robot number?"),
+               sg.Input(size=(5,1), key='-INPUT-')],
               [sg.Text(size=(40,1), key='-OUTPUT-')],
               [sg.Button('Ok', bind_return_key=True)] ]
 
-  window = sg.Window('Welcome to the Mars Adventure', layout)
+  window = sg.Window('Welcome to the Mars Adventure', layout, font=('Sans', 14))
+  window.finalize()['-INPUT-'].set_focus()
+
   number = -1
   valid_range = range(first_robot, last_robot + 1)
   while number not in valid_range:
     event, values = window.read()
-    number = int(values[0])
+    number = int(values['-INPUT-'])
     if number not in valid_range:
       window['-OUTPUT-'].update(f'Please enter a robot number between {first_robot} and {last_robot}')
     else:

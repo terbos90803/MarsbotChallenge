@@ -55,12 +55,19 @@ def get_sol():
     return _get('sol')
   return {'status': 'ok', 'sol': '1.0', 'total_sols': '10.0', 'mins_per_sol': '3.0'}
 
-def send_plan(plan):
+def send_plan(robot, plan):
   if server_address is not None:
-    return _post('send_plan', plan)
+    body = {
+      'robot': robot,
+      'plan': plan
+    }
+    return _post('send_plan', body)
   return {'status': 'ok', 'delay': 10}
 
-def send_rescue():
+def send_rescue(robot):
   if server_address is not None:
-    return _post('send_rescue')
+    body = {
+      'robot': robot
+    }
+    return _post('send_rescue', body)
   return {'status': 'ok', 'delay': 10}

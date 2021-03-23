@@ -1,8 +1,9 @@
 import welcome
 import planner
+import thankyou
 
 robot_number = welcome.get_robot_number()
 
 planner.plan_missions(robot_number)
 
-exit(0)
+thankyou.thanks()

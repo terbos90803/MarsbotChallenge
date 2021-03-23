@@ -26,6 +26,7 @@ def plan_missions(robot_number):
   window = sg.Window(
     f'Mars Adventure - Mission Planner - Robot {robot_number}', 
     build_layout(), 
+    disable_close=True,
     font=('Sans', 14), 
     finalize=True)
 
@@ -97,15 +98,16 @@ def plan_missions(robot_number):
             plan.append([event])
           elif event == send_button:
             window.hide()
-            send(plan)
+            send(robot_number, plan)
             window.un_hide()
             planning = False
           elif event == rescue_button:
-            clicked = sg.popup_ok_cancel('Are you sure you want a rescue?', keep_on_top=True,
-            font=('Sans',20))
+            clicked = sg.popup_ok_cancel('Are you sure you want a rescue?', 
+              keep_on_top=True,
+              font=('Sans',20))
             if clicked == 'OK':
               window.hide()
-              send_rescue()
+              send_rescue(robot_number)
               window.un_hide()
               planning=False
 
@@ -162,13 +164,13 @@ def build_layout():
   return layout
 
 
-def send(plan):
-  resp = remote.send_plan(plan)
+def send(robot_number, plan):
+  resp = remote.send_plan(robot_number, plan)
   animate_transmission(resp['delay'])
 
 
-def send_rescue():
-  resp = remote.send_rescue()
+def send_rescue(robot_number):
+  resp = remote.send_rescue(robot_number)
   animate_transmission(resp['delay'])
 
 

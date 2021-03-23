@@ -82,16 +82,27 @@ def plan_missions(robot_number):
           #for key in values:
           #  print(key, ' = ',values[key])
 
+          move_val = 0
+          turn_val = 0
+          try:
+            move_val = float(values[move_key])
+            turn_val = float(values[turn_key])
+          except:
+            window[move_key].update(value='1')
+            window[turn_key].update(value='1')
+            move_val = 1.0
+            turn_val = 1.0
+
           if event == delete_button:
             plan.pop()
           elif event == forward_button:
-            plan.append([event, float(values[move_key])])
+            plan.append([event, move_val])
           elif event == reverse_button:
-            plan.append([event, float(values[move_key])])
+            plan.append([event, move_val])
           elif event == left_button:
-            plan.append([event, float(values[turn_key])])
+            plan.append([event, turn_val])
           elif event == right_button:
-            plan.append([event, float(values[turn_key])])
+            plan.append([event, turn_val])
           elif event == grab_button:
             plan.append([event])
           elif event == release_button:
@@ -120,13 +131,13 @@ def build_layout():
   ]
   move_row = [
     sg.Text('Move:', size=(6,1)), 
-    sg.Input(size=(3,1), key=move_key, tooltip='How far to move.  Decimals are ok.'), 
+    sg.Input(size=(3,1), key=move_key, tooltip='How far to move. Decimals are ok.'), 
     sg.Button(forward_button, size=(5,1), tooltip='Straight Forward'), 
     sg.Button(reverse_button, size=(5,1), tooltip='Straight Reverse')
   ]
   turn_row = [
     sg.Text('Turn:', size=(6,1)), 
-    sg.Input(size=(3,1), key=turn_key, tooltip='How far to turn. '), 
+    sg.Input(size=(3,1), key=turn_key, tooltip='How far to turn. Decimals are ok.'), 
     sg.Button(left_button, size=(5,1), tooltip='Turn Left'), 
     sg.Button(right_button, size=(5,1), tooltip='Turn Right')
   ]

@@ -17,8 +17,12 @@ def get_robot_number():
   number = -1
   valid_range = range(first_robot, last_robot + 1)
   while number not in valid_range:
-    event, values = window.read()
-    number = int(values['-INPUT-'])
+    try:
+      event, values = window.read()
+      number = int(values['-INPUT-'])
+    except:
+      number = -1
+      
     if number not in valid_range:
       window['-OUTPUT-'].update(f'Please enter a robot number between {first_robot} and {last_robot}')
     else:

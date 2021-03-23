@@ -3,13 +3,13 @@ import remote
 import time
 
 
-forward_button = u'\u2191' # 'Forward'
-reverse_button = u'\u2193' # 'Reverse'
-left_button = u'\u2190' # 'Left'
-right_button = u'\u2192' # 'Right'
+forward_button = u'\u2191' # up-arrow glyph
+reverse_button = u'\u2193' # down-arrow glyph
+left_button = u'\u2190' # left-arrow glyph
+right_button = u'\u2192' # right-arrow glyph
 grab_button = 'Grab'
 release_button = 'Release'
-delete_button = u'\u232B'
+delete_button = u'\u232B' # Delete-left glyph
 send_button = 'Send Plan to Robot on Mars'
 rescue_button = 'Rescue'
 
@@ -23,66 +23,20 @@ progress_template = '----------------------------------------'
 
 def plan_missions(robot_number):
 
-  sol_row = [
-    sg.Column( [[sg.Text(size=(30,1), key=sol_key, font=('Sans', 24), justification='center')]], justification='c')
-  ]
-  move_row = [
-    sg.Text('Move:', size=(6,1)), 
-    sg.Input(size=(3,1), key=move_key, tooltip='How far to move.  Decimals are ok.'), 
-    sg.Button(forward_button, size=(5,1), tooltip='Straight Forward'), 
-    sg.Button(reverse_button, size=(5,1), tooltip='Straight Reverse')
-  ]
-  turn_row = [
-    sg.Text('Turn:', size=(6,1)), 
-    sg.Input(size=(3,1), key=turn_key, tooltip='How far to turn. '), 
-    sg.Button(left_button, size=(5,1), tooltip='Turn Left'), 
-    sg.Button(right_button, size=(5,1), tooltip='Turn Right')
-  ]
-  grab_row = [
-    sg.Text('Grab:', size=(6,1)), 
-    sg.Button(grab_button, size=(10,1)), 
-    sg.Button(release_button, size=(10,1))
-  ]
-  plan_row = [
-    sg.Button(delete_button, disabled=True, tooltip='Delete last move'),
-    sg.Text(size=(40,1), key=plan_key, font=('Sans',10))
-  ]
-  send_row = [
-    sg.Button(send_button, disabled=True),
-    sg.Button(rescue_button)
-  ]
-  controls_row = [
-    sg.Column( [
-      move_row,
-      turn_row,
-      grab_row,
-      plan_row,
-      send_row
-    ], justification='c')
-  ]
-  progress_row = [
-    sg.Column( [[
-      sg.Text('Earth'), 
-      sg.Text(progress_template, key=progress_key), 
-      sg.Text('Mars')
-      ]], justification='c')
-  ]
-
-  layout = [
-    sol_row,
-    controls_row,
-    progress_row
-  ]
-
-  window = sg.Window(f'Mars Adventure - Mission Planner - Robot {robot_number}', layout, font=('Sans', 14), finalize=True)
-
-  window[move_key].update(value='1')
-  window[turn_key].update(value='1')
-
-  plan = []
+  window = sg.Window(
+    f'Mars Adventure - Mission Planner - Robot {robot_number}', 
+    build_layout(), 
+    font=('Sans', 14), 
+    finalize=True)
 
   # Outer planning loop, once per submitted plan
   while True:
+    window[move_key].update(value='1')
+    window[turn_key].update(value='1')
+
+    plan = []
+
+    # Get the current Sol time
     sol_dict = remote.get_sol()
     sol_base = float(sol_dict['sol'])
     sol_total = float(sol_dict['total_sols'])
@@ -109,6 +63,7 @@ def plan_missions(robot_number):
         else:
           plan_text += f'{step[0]} {step[1]}, '
       window[plan_key].update(plan_text)
+      window[plan_key].set_size((len(plan_text),None))
 
       # Enable the correct buttons
       empty_plan = len(plan) == 0
@@ -141,26 +96,99 @@ def plan_missions(robot_number):
           elif event == release_button:
             plan.append([event])
           elif event == send_button:
-            send(window, plan)
-            plan = []
+            window.hide()
+            send(plan)
+            window.un_hide()
             planning = False
           elif event == rescue_button:
-            clicked = sg.popup_ok_cancel('Are you sure you want a rescue?', keep_on_top=True)
+            clicked = sg.popup_ok_cancel('Are you sure you want a rescue?', keep_on_top=True,
+            font=('Sans',20))
             if clicked == 'OK':
-              send_rescue(window)
+              window.hide()
+              send_rescue()
+              window.un_hide()
+              planning=False
 
   window.close()
 
 
-def send(window, plan):
-  animate_transmission(window, 10)
+def build_layout():
+  sol_row = [
+    sg.Column( [[sg.Text(size=(20,1), key=sol_key, font=('Sans', 24), justification='center')]], justification='c')
+  ]
+  move_row = [
+    sg.Text('Move:', size=(6,1)), 
+    sg.Input(size=(3,1), key=move_key, tooltip='How far to move.  Decimals are ok.'), 
+    sg.Button(forward_button, size=(5,1), tooltip='Straight Forward'), 
+    sg.Button(reverse_button, size=(5,1), tooltip='Straight Reverse')
+  ]
+  turn_row = [
+    sg.Text('Turn:', size=(6,1)), 
+    sg.Input(size=(3,1), key=turn_key, tooltip='How far to turn. '), 
+    sg.Button(left_button, size=(5,1), tooltip='Turn Left'), 
+    sg.Button(right_button, size=(5,1), tooltip='Turn Right')
+  ]
+  grab_row = [
+    sg.Text('Grab:', size=(6,1)), 
+    sg.Button(grab_button, size=(10,1)), 
+    sg.Button(release_button, size=(10,1))
+  ]
+  plan_row = [
+    sg.Column( [[
+      sg.Button(delete_button, disabled=True, font=('Sans',10), tooltip='Delete last move'),
+      sg.Text(size=(1,1), key=plan_key, font=('Sans',10))
+    ]], justification='left')
+  ]
+  send_row = [
+    sg.Column( [[
+      sg.Button(send_button, disabled=True),
+      sg.Button(rescue_button)
+    ]], justification='left')
+  ]
+  controls_row = [
+    sg.Column( [
+      move_row,
+      turn_row,
+      grab_row
+    ], justification='left')
+  ]
+
+  layout = [
+    sol_row,
+    controls_row,
+    plan_row,
+    send_row
+  ]
+  return layout
 
 
-def send_rescue(window):
-  animate_transmission(window, 10)
+def send(plan):
+  resp = remote.send_plan(plan)
+  animate_transmission(resp['delay'])
 
 
-def animate_transmission(window, duration):
+def send_rescue():
+  resp = remote.send_rescue()
+  animate_transmission(resp['delay'])
+
+
+def animate_transmission(duration):
+  progress_layout = [[
+    sg.Text('Earth'), 
+    sg.Text(progress_template, key=progress_key), 
+    sg.Text('Mars')
+  ]]
+  window = sg.Window(
+    'Transmitting Plan to Mars', 
+    progress_layout, 
+    font=('Sans', 30),
+    disable_close=True,
+    #disable_minimize=True, # doesn't work in repl.it
+    keep_on_top=True,
+    modal=True,
+    finalize=True,
+    element_justification='center')
+
   progress_bar = window[progress_key]
   length = len(progress_template)
   step_time = float(duration) / (length * 2)
@@ -179,5 +207,5 @@ def animate_transmission(window, duration):
     window.refresh()
     time.sleep(step_time)
 
-  progress_bar.update(value=progress_template)
+  window.close()
   

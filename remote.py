@@ -1,8 +1,8 @@
 import requests
 
 
-server_address = None # offline test mode
-#server_address = 'http://0.0.0.0/'
+#server_address = None # offline test mode
+server_address = 'http://47.147.215.195:5000/'
 
 def _get(endpoint, attrs=dict()):
   uri = f'{server_address}{endpoint}'
@@ -41,12 +41,12 @@ def _post(endpoint, body=dict(), attrs=dict()):
 
 def get_valid_robots():
   if server_address is not None:
-    return _get('valid_robots')
+    return _get('robots')
   return {'status': 'ok', 'first_robot': '1', 'last_robot': '6'}
 
 def register_robot_number(number):
   if server_address is not None:
-    return _get('register', {'robot': f'{number}'})
+    return _post('robot', {'robot': f'{number}'})
   return {'status': 'ok'}
   #return {'status': 'fail', 'reason': 'Number already taken'}
 
@@ -61,7 +61,7 @@ def send_plan(robot, plan):
       'robot': robot,
       'plan': plan
     }
-    return _post('send_plan', body)
+    return _post('plan', body)
   return {'status': 'ok', 'delay': 10}
 
 def send_rescue(robot):
@@ -69,5 +69,5 @@ def send_rescue(robot):
     body = {
       'robot': robot
     }
-    return _post('send_rescue', body)
+    return _post('plan', body)
   return {'status': 'ok', 'delay': 10}

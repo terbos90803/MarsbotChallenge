@@ -176,16 +176,26 @@ def build_layout():
 
 
 def send(robot_number, plan):
-  resp = remote.send_plan(robot_number, plan)
-  animate_transmission(resp['delay'])
+  process_plan_response(remote.send_plan(robot_number, plan))
 
 
 def send_rescue(robot_number):
-  resp = remote.send_rescue(robot_number)
-  animate_transmission(resp['delay'])
+  process_plan_response(remote.send_rescue(robot_number))
+
+
+def process_plan_response(resp):
+  status = resp.get('status')
+  if status == 'ok':
+    animate_transmission(resp.get('delay'))
+  else:
+    print(f'Problem with plan: {resp}')
 
 
 def animate_transmission(duration):
+  if duration is None:
+    print('Plan submission:')
+    duration = '10' # safety default
+
   progress_layout = [[
     sg.Text('Earth'), 
     sg.Text(progress_template, key=progress_key), 
@@ -206,19 +216,18 @@ def animate_transmission(duration):
   length = len(progress_template)
   step_time = float(duration) / (length * 2)
 
+  def animate_progress(start, end, inc=1):
+    for i in range(start, end, inc):
+      bar = progress_template[:i] + '*' + progress_template[i+1:]
+      progress_bar.update(value=bar)
+      window.refresh()
+      time.sleep(step_time)
+
   #Outbound
-  for i in range(0, length):
-    bar = progress_template[:i] + '*' + progress_template[i+1:]
-    progress_bar.update(value=bar)
-    window.refresh()
-    time.sleep(step_time)
+  animate_progress(0, length)
 
   #Inbound
-  for i in range(length-1, -1, -1):
-    bar = progress_template[:i] + '*' + progress_template[i+1:]
-    progress_bar.update(value=bar)
-    window.refresh()
-    time.sleep(step_time)
+  animate_progress(length-1, -1, -1)
 
   window.close()
   

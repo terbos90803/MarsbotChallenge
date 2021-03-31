@@ -1,4 +1,5 @@
 import requests
+import json
 
 
 #server_address = None # offline test mode
@@ -59,7 +60,7 @@ def send_plan(robot, plan):
   if server_address is not None:
     body = {
       'robot': robot,
-      'plan': plan
+      'plan': json.dumps(plan)
     }
     return _post('plan', body)
   return {'status': 'ok', 'delay': 10}

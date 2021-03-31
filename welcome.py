@@ -11,8 +11,8 @@ def get_robot_number():
               [sg.Text(size=(40,1), key='-OUTPUT-')],
               [sg.Button('Ok', bind_return_key=True)] ]
 
-  window = sg.Window('Welcome to the Mars Adventure', layout, font=('Sans', 14))
-  window.finalize()['-INPUT-'].set_focus()
+  window = sg.Window('Welcome to the Mars Adventure', layout, font=('Sans', 14), finalize=True)
+  #window['-INPUT-'].set_focus()
 
   number = -1
   valid_range = range(first_robot, last_robot + 1)

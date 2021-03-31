@@ -96,17 +96,17 @@ def plan_missions(robot_number):
           if event == delete_button:
             plan.pop()
           elif event == forward_button:
-            plan.append([event, move_val])
+            plan.append((event, move_val))
           elif event == reverse_button:
-            plan.append([event, move_val])
+            plan.append((event, move_val))
           elif event == left_button:
-            plan.append([event, turn_val])
+            plan.append((event, turn_val))
           elif event == right_button:
-            plan.append([event, turn_val])
+            plan.append((event, turn_val))
           elif event == grab_button:
-            plan.append([event])
+            plan.append((event,))
           elif event == release_button:
-            plan.append([event])
+            plan.append((event,))
           elif event == send_button:
             window.hide()
             send(robot_number, plan)
@@ -115,7 +115,7 @@ def plan_missions(robot_number):
           elif event == rescue_button:
             clicked = sg.popup_ok_cancel('Are you sure you want a rescue?', 
               keep_on_top=True,
-              font=('Sans',20))
+              font=('Sans', 20))
             if clicked == 'OK':
               window.hide()
               send_rescue(robot_number)

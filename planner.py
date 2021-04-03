@@ -52,7 +52,7 @@ def plan_missions(robot_number):
       # Update the Sol timer
       mins_planning = (time.time() - sol_rt_base) / 60.0
       sol_now = sol_base + mins_planning / mins_per_sol
-      if sol_now > sol_total:
+      if sol_now > sol_total + 1:
         break
       window['-SOL-MESSAGE-'].update(f'Sol {sol_now:.1f} of {sol_total:.0f}')
 

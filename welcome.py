@@ -1,35 +1,43 @@
 import PySimpleGUI as sg
 import remote
+import time
 
 def get_robot_number():
-  robots_dict = remote.get_valid_robots();
-  first_robot = int(robots_dict['first_robot'])
-  last_robot = int(robots_dict['last_robot'])
-
-  layout = [  [sg.Text("What is your robot number?"),
-               sg.Input(size=(5,1), key='-INPUT-')],
-              [sg.Text(size=(40,1), key='-OUTPUT-')],
-              [sg.Button('Ok', bind_return_key=True)] ]
-
-  window = sg.Window('Welcome to the Mars Adventure', layout, font=('Sans', 14), finalize=True)
-  #window['-INPUT-'].set_focus()
-
-  number = -1
-  valid_range = range(first_robot, last_robot + 1)
-  while number not in valid_range:
+  # Wait for server connection
+  layout = [[sg.Text('Waiting to connect...', size=(30,1), justification='center')]]
+  window = sg.Window(
+    'Connecting to the Mars Adventure', layout, font=('Sans', 14),
+    disable_close=True, finalize=True)
+  while True:
     try:
-      event, values = window.read()
-      number = int(values['-INPUT-'])
+      resp = remote.get_robot_assignment()
+      robot_number = int(resp['robot_number'])
+      break
     except:
-      number = -1
-      
-    if number not in valid_range:
-      window['-OUTPUT-'].update(f'Please enter a robot number between {first_robot} and {last_robot}')
-    else:
-      resp = remote.register_robot_number(number)
-      if resp['status'] == 'fail':
-        window['-OUTPUT-'].update(f'Error: {resp["reason"]}')
-        number = -1
-
+      time.sleep(1)
   window.close()
-  return number
+
+  # Wait for game to start
+  layout = [
+    [sg.Text(f'You will be driving robot number {robot_number}')],
+    [sg.Text('Waiting for the game to start', key='-WAIT-')],
+    [sg.Button('Ok', key='-OK-', disabled=True, bind_return_key=True)]
+  ]
+  window = sg.Window(
+    'Waiting to start Mars Adventure', layout, font=('Sans', 14),
+    disable_close=True, finalize=True)
+  while True:
+    try:
+      resp = remote.get_sol()
+      status = resp['status']
+      waiting = status != 'ok'
+      window['-WAIT-'].update(visible=waiting)
+      window['-OK-'].update(disabled=waiting)
+      event, values = window.read(timeout=1000)
+      if event == '-OK-':
+        break
+    except:
+      time.sleep(1)
+  window.close()
+
+  return robot_number

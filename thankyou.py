@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
 
 def thanks():
-  sg.popup('Thanks for playing',
+  sg.popup('Game Over', 'Thanks for playing',
     font=('Sans',20))

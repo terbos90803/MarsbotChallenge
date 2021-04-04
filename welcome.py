@@ -28,7 +28,7 @@ def get_robot_number():
 
   # Wait for game to start
   layout = [
-    [sg.Text(f'You will be driving robot number {robot_number}')],
+    [sg.Text(f'You will be driving robot number {robot_number}', size=(30,1))],
     [sg.Text('Waiting for the game to start', key='-WAIT-')],
     [sg.Button('Ok', key='-OK-', disabled=True, bind_return_key=True)]
   ]

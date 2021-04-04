@@ -4,17 +4,26 @@ import time
 
 def get_robot_number():
   # Wait for server connection
-  layout = [[sg.Text('Waiting to connect...', size=(30,1), justification='center')]]
+  layout = [
+    [sg.Text('Waiting to connect...', size=(30,1), justification='center')],
+    [sg.Text(' ', size=(30,1), key='-MESSAGE-', justification='center')]
+  ]
   window = sg.Window(
     'Connecting to the Mars Adventure', layout, font=('Sans', 14),
     disable_close=True, finalize=True)
   while True:
     try:
       resp = remote.get_robot_assignment()
-      robot_number = int(resp['robot_number'])
-      break
+      if resp['status'] == 'ok':
+        robot_number = int(resp['robot_number'])
+        break
+      #print(resp['reason'])
+      msg = resp.get('message')
+      window['-MESSAGE-'].update(msg if msg else 'Server not ready')
+      window.refresh()
     except:
-      time.sleep(1)
+      pass
+    time.sleep(1)
   window.close()
 
   # Wait for game to start
@@ -26,14 +35,21 @@ def get_robot_number():
   window = sg.Window(
     'Waiting to start Mars Adventure', layout, font=('Sans', 14),
     disable_close=True, finalize=True)
+  flash = False
   while True:
     try:
       resp = remote.get_sol()
-      status = resp['status']
+      status = resp.get('status')
       waiting = status != 'ok'
+
       window['-WAIT-'].update(visible=waiting)
-      window['-OK-'].update(disabled=waiting)
-      event, values = window.read(timeout=1000)
+
+      flash = not flash
+      light = flash and not waiting
+      color = ('white', 'green') if light else None
+      window['-OK-'].update(button_color=color, disabled=waiting)
+      
+      event, values = window.read(timeout=500)
       if event == '-OK-':
         break
     except:

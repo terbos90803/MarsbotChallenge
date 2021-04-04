@@ -3,7 +3,7 @@ import json
 
 
 server_address = None # offline test mode
-server_address = 'http://47.147.215.195:5000/'
+#server_address = 'http://47.147.215.195:5000/'
 
 def _get(endpoint, attrs=dict()):
   uri = f'{server_address}{endpoint}'

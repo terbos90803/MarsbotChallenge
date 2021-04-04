@@ -69,16 +69,3 @@ def send_rescue(robot):
     }
     return _post('plan', body)
   return {'status': 'ok', 'delay': 10}
-
-
-# Deprecated methods
-def get_valid_robots():
-  if server_address:
-    return _get('robots')
-  return {'status': 'ok', 'first_robot': '1', 'last_robot': '6'}
-
-def register_robot_number(number):
-  if server_address:
-    return _post('robot', {'robot': f'{number}'})
-  return {'status': 'ok'}
-  #return {'status': 'fail', 'reason': 'Number already taken'}

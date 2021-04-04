@@ -38,12 +38,14 @@ def plan_missions(robot_number):
     plan = []
 
     # Get the current Sol time
+    # A status other than ok means the game ended
     sol_dict = remote.get_sol()
+    if sol_dict['status'] != 'ok':
+      break
+
     sol_base = float(sol_dict['sol'])
     sol_total = float(sol_dict['total_sols'])
     mins_per_sol = float(sol_dict['mins_per_sol']) # minutes per sol
-    if sol_base > sol_total:
-      break
     sol_rt_base = time.time() # connect sol_now to the realtime clock
 
     # Inner planning loop, once per window event
@@ -53,7 +55,7 @@ def plan_missions(robot_number):
       mins_planning = (time.time() - sol_rt_base) / 60.0
       sol_now = sol_base + mins_planning / mins_per_sol
       if sol_now > sol_total + 1:
-        break
+        planning = False # game probably over, check with server
       window['-SOL-MESSAGE-'].update(f'Sol {sol_now:.1f} of {sol_total:.0f}')
 
       # Display the current plan
@@ -120,7 +122,7 @@ def plan_missions(robot_number):
               window.hide()
               send_rescue(robot_number)
               window.un_hide()
-              planning=False
+              planning = False
 
   window.close()
 

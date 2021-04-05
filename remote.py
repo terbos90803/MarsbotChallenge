@@ -40,9 +40,9 @@ def _post(endpoint, body=dict(), attrs=dict()):
     return {'status': 'fail', 'reason': err}
 
 
-def get_robot_assignment():
+def get_robot_assignment(name):
   if server_address:
-    return _get('robot_assignment')
+    return _get('robot_assignment', {'name': name})
   return {'status': 'ok', 'robot_number': '1'}
 
 

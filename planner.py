@@ -194,6 +194,9 @@ def process_plan_response(resp):
 
 
 def animate_transmission(duration):
+  if duration == 0:
+    return
+    
   if duration is None:
     print('Plan submission:')
     duration = '10' # safety default

@@ -44,10 +44,10 @@ def get_robot_number():
   layout = [
     [sg.Text(f'You will be driving robot number {robot_number}', size=(30,1))],
     [sg.Text('Waiting for the game to start', key='-WAIT-')],
-    [sg.Button('Ok', key='-OK-', disabled=True, bind_return_key=True)]
+    [sg.Button('Start Driving', key='-OK-', disabled=True, bind_return_key=True)]
   ]
   window = sg.Window(
-    'Waiting to start Mars Adventure', layout, font=('Sans', 14),
+    'Waiting to start the Mars Adventure', layout, font=('Sans', 14),
     disable_close=True, finalize=True)
   flash = False
   while True:

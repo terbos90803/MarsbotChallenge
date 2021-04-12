@@ -16,6 +16,7 @@ rescue_button = 'Rescue'
 sol_key = '-SOL-MESSAGE-'
 move_key = '-MOVE-'
 turn_key = '-TURN-'
+degrees_key = '-DEGREES-'
 plan_key = '-PLAN-'
 progress_key = '-PROGRESS-'
 
@@ -33,7 +34,7 @@ def plan_missions(robot_number):
   # Outer planning loop, once per submitted plan
   while True:
     window[move_key].update(value='1')
-    window[turn_key].update(value='1')
+    window[turn_key].update(value='90' if window[degrees_key].get() else '1')
 
     plan = []
 
@@ -63,8 +64,10 @@ def plan_missions(robot_number):
       for step in plan:
         if len(step) == 1:
           plan_text += f'{step[0]}, '
-        else:
+        elif len(step) == 2:
           plan_text += f'{step[0]} {step[1]}, '
+        else:
+          plan_text += f'{step[0]} {(step[1] * step[2]):.1f}, '
       window[plan_key].update(plan_text)
       window[plan_key].set_size((len(plan_text),None))
 
@@ -84,16 +87,18 @@ def plan_missions(robot_number):
           #for key in values:
           #  print(key, ' = ',values[key])
 
-          move_val = 0
-          turn_val = 0
           try:
             move_val = float(values[move_key])
             turn_val = float(values[turn_key])
+            turn_scale = 90.0 if values[degrees_key] else 1.0
+            turn_val /= turn_scale
           except:
             window[move_key].update(value='1')
             window[turn_key].update(value='1')
+            window[degrees_key].update(value=False)
             move_val = 1.0
             turn_val = 1.0
+            turn_scale = 1.0
 
           if event == delete_button:
             plan.pop()
@@ -102,9 +107,9 @@ def plan_missions(robot_number):
           elif event == reverse_button:
             plan.append((event, move_val))
           elif event == left_button:
-            plan.append((event, turn_val))
+            plan.append((event, turn_val, turn_scale))
           elif event == right_button:
-            plan.append((event, turn_val))
+            plan.append((event, turn_val, turn_scale))
           elif event == grab_button:
             plan.append((event,))
           elif event == release_button:
@@ -132,27 +137,31 @@ def build_layout():
     sg.Column( [[sg.Text(size=(20,1), key=sol_key, font=('Sans', 24), justification='center')]], justification='c')
   ]
   move_row = [
-    sg.Text('Move:', size=(6,1)), 
-    sg.Input(size=(3,1), key=move_key, tooltip='How far to move. Decimals are ok.'), 
-    sg.Button(forward_button, size=(5,1), tooltip='Straight Forward'), 
-    sg.Button(reverse_button, size=(5,1), tooltip='Straight Reverse')
+    sg.Frame('Move', [[
+      sg.Input(size=(3,1), key=move_key, tooltip='How far to move. Decimals are ok.'), 
+      sg.Button(forward_button, size=(5,1), tooltip='Straight Forward'), 
+      sg.Button(reverse_button, size=(5,1), tooltip='Straight Reverse')
+    ]], border_width=1)
   ]
   turn_row = [
-    sg.Text('Turn:', size=(6,1)), 
-    sg.Input(size=(3,1), key=turn_key, tooltip='How far to turn. Decimals are ok.'), 
-    sg.Button(left_button, size=(5,1), tooltip='Turn Left'), 
-    sg.Button(right_button, size=(5,1), tooltip='Turn Right')
+    sg.Frame('Turn', [[
+      sg.Input(size=(3,1), key=turn_key, tooltip='How far to turn. Decimals are ok.'), 
+      sg.Button(left_button, size=(5,1), tooltip='Turn Left'), 
+      sg.Button(right_button, size=(5,1), tooltip='Turn Right'),
+      sg.Checkbox('degrees', key=degrees_key)
+    ]], border_width=1)
   ]
   grab_row = [
-    sg.Text('Grab:', size=(6,1)), 
-    sg.Button(grab_button, size=(10,1)), 
-    sg.Button(release_button, size=(10,1))
+    sg.Frame('Grab', [[ 
+      sg.Button(grab_button, size=(10,1)), 
+      sg.Button(release_button, size=(10,1))
+    ]], border_width=1)
   ]
   plan_row = [
-    sg.Column( [[
+    sg.Frame('Plan', [[
       sg.Button(delete_button, disabled=True, font=('Sans',10), tooltip='Delete last move'),
       sg.Text(size=(1,1), key=plan_key, font=('Sans',10))
-    ]], justification='left')
+    ]], border_width=1)
   ]
   send_row = [
     sg.Column( [[
@@ -160,17 +169,12 @@ def build_layout():
       sg.Button(rescue_button)
     ]], justification='left')
   ]
-  controls_row = [
-    sg.Column( [
-      move_row,
-      turn_row,
-      grab_row
-    ], justification='left')
-  ]
 
   layout = [
     sol_row,
-    controls_row,
+    move_row,
+    turn_row,
+    grab_row,
     plan_row,
     send_row
   ]

@@ -28,13 +28,14 @@ def plan_missions(robot_number):
     f'Mars Adventure - Mission Planner - Robot {robot_number}', 
     build_layout(), 
     disable_close=True,
-    font=('Sans', 14), 
+    font=('Sans', 12), 
     finalize=True)
 
   # Outer planning loop, once per submitted plan
   while True:
+    degrees_mode = window[degrees_key].get()
     window[move_key].update(value='1')
-    window[turn_key].update(value='90' if window[degrees_key].get() else '1')
+    window[turn_key].update(value='90' if degrees_mode else '1')
 
     plan = []
 
@@ -59,6 +60,8 @@ def plan_missions(robot_number):
         planning = False # game probably over, check with server
       window['-SOL-MESSAGE-'].update(f'Sol {sol_now:.1f} of {sol_total:.0f}')
 
+      turn_scale = 90.0 if degrees_mode else 1.0
+
       # Display the current plan
       plan_text = ''
       for step in plan:
@@ -67,9 +70,9 @@ def plan_missions(robot_number):
         elif len(step) == 2:
           plan_text += f'{step[0]} {step[1]}, '
         else:
-          plan_text += f'{step[0]} {(step[1] * step[2]):.1f}, '
+          plan_text += f'{step[0]} {(step[1] * turn_scale):.1f}, '
       window[plan_key].update(plan_text)
-      window[plan_key].set_size((len(plan_text),None))
+      window[plan_key].set_size((len(plan_text), None))
 
       # Enable the correct buttons
       empty_plan = len(plan) == 0
@@ -80,25 +83,35 @@ def plan_missions(robot_number):
       # timeout allows the Sol timer to update like a clock
       event, values = window.read(timeout=500)
 
+      # Manage turn units
+      degrees_checkbox = values[degrees_key]
+      if degrees_mode != degrees_checkbox:
+        degrees_mode = degrees_checkbox
+        try:
+          val = float(window[turn_key].get())
+          if degrees_mode:
+            val *= 90.0
+          else:
+            val /= 90.0
+        except:
+          val = 1
+        window[turn_key].update(val)
+
       # Process any other events
       if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
-          #print('============ Event = ', event, ' ==============')
-          #print('-------- Values Dictionary (key=value) --------')
-          #for key in values:
-          #  print(key, ' = ',values[key])
+          # print('============ Event = ', event, ' ==============')
+          # print('-------- Values Dictionary (key=value) --------')
+          # for key in values:
+          #   print(key, ' = ',values[key])
 
           try:
             move_val = float(values[move_key])
-            turn_val = float(values[turn_key])
-            turn_scale = 90.0 if values[degrees_key] else 1.0
-            turn_val /= turn_scale
+            turn_val = float(values[turn_key]) / turn_scale
           except:
-            window[move_key].update(value='1')
-            window[turn_key].update(value='1')
-            window[degrees_key].update(value=False)
             move_val = 1.0
             turn_val = 1.0
-            turn_scale = 1.0
+            window[move_key].update(value=move_val)
+            window[turn_key].update(value=turn_val * turn_scale)
 
           if event == delete_button:
             plan.pop()
@@ -138,14 +151,14 @@ def build_layout():
   ]
   move_row = [
     sg.Frame('Move', [[
-      sg.Input(size=(3,1), key=move_key, tooltip='How far to move. Decimals are ok.'), 
+      sg.Input(size=(4,1), key=move_key, tooltip='How far to move. Decimals are ok.'), 
       sg.Button(forward_button, size=(5,1), tooltip='Straight Forward'), 
       sg.Button(reverse_button, size=(5,1), tooltip='Straight Reverse')
     ]], border_width=1)
   ]
   turn_row = [
     sg.Frame('Turn', [[
-      sg.Input(size=(3,1), key=turn_key, tooltip='How far to turn. Decimals are ok.'), 
+      sg.Input(size=(4,1), key=turn_key, tooltip='How far to turn. Decimals are ok.'), 
       sg.Button(left_button, size=(5,1), tooltip='Turn Left'), 
       sg.Button(right_button, size=(5,1), tooltip='Turn Right'),
       sg.Checkbox('degrees', key=degrees_key)
